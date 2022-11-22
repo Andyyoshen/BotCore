@@ -1,8 +1,15 @@
 ﻿using LineBuyCart.Models;
 using LineBuyCart.Service;
 using LineBuyCart.Services;
-var builder = WebApplication.CreateBuilder(args);
+using Microsoft.EntityFrameworkCore;
 
+var builder = WebApplication.CreateBuilder(args);
+var serverVersion = new MySqlServerVersion(new Version(8,0,0));
+builder.Services.AddDbContext<ShoopingContext>(option =>
+{
+    option.UseMySql(builder.Configuration.GetConnectionString("MyContext"),
+        serverVersion);
+});
 // Add services to the container.
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

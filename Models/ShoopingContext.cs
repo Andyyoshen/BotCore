@@ -2,18 +2,21 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.Extensions.Configuration;
 
 namespace LineBuyCart.Models
 {
     public partial class ShoopingContext : DbContext
     {
+        private readonly IConfiguration _configuration;
         public ShoopingContext()
         {
         }
 
-        public ShoopingContext(DbContextOptions<ShoopingContext> options)
+        public ShoopingContext(DbContextOptions<ShoopingContext> options,IConfiguration configuration)
             : base(options)
         {
+            _configuration = configuration;
         }
 
         public virtual DbSet<OrderList> OrderLists { get; set; } = null!;
@@ -25,8 +28,10 @@ namespace LineBuyCart.Models
         {
             if (!optionsBuilder.IsConfigured)
             {
+
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseSqlServer("Server=localhost;Password=Qwerty851120;User Id=SA;Database=Shooping;Trusted_Connection=false;");
+                optionsBuilder.UseSqlServer();
+                
             }
         }
 

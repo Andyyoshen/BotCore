@@ -399,6 +399,7 @@ namespace isRock.Template
                 //response OK
                 var responseMsg = $"資訊錯誤請聯絡管理員";
                 this.ReplyMessage(LineEvent.replyToken, responseMsg);
+		Console.Write(nn+"ErrorMessage");
                 return Ok();
             }
         }

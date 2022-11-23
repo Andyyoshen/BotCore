@@ -135,7 +135,7 @@ namespace isRock.Template
                             };
                             if (_orderConfirmServices.Update(updateOrderConfirm))
                             {
-                                responseMsg = $"姓名{LineEvent.message.text}以設定完成，接下來請輸入手機";
+                                responseMsg = $"姓名:{LineEvent.message.text}以設定完成，接下來請輸入手機";
 
                             }
                             else
@@ -166,7 +166,7 @@ namespace isRock.Template
                                 };
                                 if (_orderConfirmServices.Update(updateOrderConfirm))
                                 {
-                                    responseMsg = $"手機{LineEvent.message.text}已設定完成，接下來請輸入地址";
+                                    responseMsg = $"手機:{LineEvent.message.text}已設定完成，接下來請輸入地址";
 
                                 }
                                 else
@@ -281,7 +281,7 @@ namespace isRock.Template
                         _db.OrderConfirms.Add(insert);
                         _db.SaveChanges();
 
-                        responseMsg = $"您買的{orderFlow.Count}個{orderResult.Name}已成功完成訂購,請填入姓名";
+                        responseMsg = $"您買的{orderFlow.Count}個{orderResult.Name}已成功完成訂購，接下來請填入姓名";
                         this.ReplyMessage(LineEvent.replyToken, responseMsg);
 
                     }

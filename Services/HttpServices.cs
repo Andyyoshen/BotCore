@@ -12,17 +12,21 @@ namespace LineBuyCart.Services
     {
 
         private readonly IHttpClientFactory _httpClientFactory;
-        public HttpServices(IHttpClientFactory httpClientFactory)
+        private readonly IConfiguration _configuration;
+        public HttpServices(IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
             _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
+
         }
        
         public async Task<LineUserInfoDto> OnGet(string userId)
         {
                 var resultModle = new LineUserInfoDto();
                 var httpClient = _httpClientFactory.CreateClient();
+                var ChannelAccessToken = _configuration.GetValue<string>("Chanel:ChannelAccessToken");
                 //httpClient.BaseAddress = new Uri("");
-                httpClient.DefaultRequestHeaders.Add("authorization", "Bearer WRQ1ZX1TnPfteOEHrGuaEi4CDRKU5JkyHYmGLw3uS3JWrYwU3DG0fpZSyg7Kt2h8yV4FlK9lVThEm6/EvoZFSxcx778TXa2wIMflTxVtDzk+xZa6NMeoM+rc9LWK40IUImEumLLCLPECS7Zvza7AsQdB04t89/1O/w1cDnyilFU=");
+            httpClient.DefaultRequestHeaders.Add("authorization", $"Bearer {ChannelAccessToken}");
                 var httpResponseMessage = await httpClient.GetAsync($"https://api.line.me/v2/bot/profile/{userId}");
                 if (httpResponseMessage.IsSuccessStatusCode)
                 {

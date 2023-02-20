@@ -39,7 +39,7 @@ namespace LineBuyCart.Models
         {
             modelBuilder.Entity<OrderList>(entity =>
             {
-                entity.ToTable("OrderList");
+                entity.ToTable("orderlist");
 
                 entity.Property(e => e.OrderListId).HasColumnName("OrderListID");
 
@@ -47,21 +47,21 @@ namespace LineBuyCart.Models
             });
             modelBuilder.Entity<UserInfo>(entity =>
             {
-                entity.ToTable("UserInfo");
+                entity.ToTable("userinfo");
 
                 entity.Property(e => e.UserInfoId).HasColumnName("UserInfoId");
 
             });
             modelBuilder.Entity<OrderFlow>(entity =>
             {
-                entity.ToTable("OrderFlow");
+                entity.ToTable("orderflow");
 
                 entity.Property(e => e.OrderFlowId).HasColumnName("OrderFlowId");
 
             });
             modelBuilder.Entity<OrderConfirm>(entity =>
             {
-                entity.ToTable("OrderConfirm");
+                entity.ToTable("orderconfirm");
 
                 entity.Property(e => e.OrderConfirmId).HasColumnName("OrderConfirmId");
 

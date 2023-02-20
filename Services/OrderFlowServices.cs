@@ -100,18 +100,10 @@ namespace LineBuyCart.Services
         }
         public bool Update(UpdateCountOrderFlowDto updateCountOrderFlowDto)
         {
-            try
-            {
                 var result = _db.OrderFlows.Where(x => x.LineId == updateCountOrderFlowDto.LineId).FirstOrDefault();
                 var resp = _mapper.Map(updateCountOrderFlowDto, result);
                 _db.SaveChanges();
                 return true;
-            }
-            catch (Exception err)
-            {
-                var errorMessage = err.Message;
-                return false;
-            }
 
         }
 

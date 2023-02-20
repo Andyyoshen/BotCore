@@ -26,6 +26,8 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using Microsoft.EntityFrameworkCore;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using LineBuyCart.Enum;
+using Microsoft.Extensions.Configuration;
 
 namespace isRock.Template
 {
@@ -45,9 +47,10 @@ namespace isRock.Template
         private readonly UserInfoService _userInfoService;
         private readonly OrderFlowServices _orderFlowServices;
         private readonly OrderConfirmServices _orderConfirmServices;
+        private readonly IConfiguration _configuration;
         private readonly HttpServices _httpServices;
         private readonly ShoopingContext _db;
-        public LineWebHookController(HttpServices httpServices, ShoopingContext dbContext, OrderConfirmServices orderConfirmServices,OrderFlowServices orderFlowServices, UserInfoService userInfoService,OrderListServices orderList, ApplicationServices applicationServices)
+        public LineWebHookController(HttpServices httpServices, IConfiguration configuration, ShoopingContext dbContext, OrderConfirmServices orderConfirmServices,OrderFlowServices orderFlowServices, UserInfoService userInfoService,OrderListServices orderList, ApplicationServices applicationServices)
         {
             _httpServices = httpServices;
             _orderListServices = orderList;
@@ -55,6 +58,7 @@ namespace isRock.Template
             _orderFlowServices = orderFlowServices;
             _userInfoService = userInfoService;
             _orderConfirmServices = orderConfirmServices;
+            _configuration = configuration;
             _db = dbContext;
         }
 
@@ -65,12 +69,14 @@ namespace isRock.Template
         {
 
             
-            var AdminUserId = "U317ef0f8f8b009e49bafcc60aa7b76cb";
+            var AdminUserId = _configuration.GetValue<string>("Chanel:AdminUserId");
+            var ChannelAccessToken = _configuration.GetValue<string>("Chanel:ChannelAccessToken");
+
             var now = DateTime.Now;
             try
             {
                 //設定ChannelAccessToken
-                this.ChannelAccessToken = "WRQ1ZX1TnPfteOEHrGuaEi4CDRKU5JkyHYmGLw3uS3JWrYwU3DG0fpZSyg7Kt2h8yV4FlK9lVThEm6/EvoZFSxcx778TXa2wIMflTxVtDzk+xZa6NMeoM+rc9LWK40IUImEumLLCLPECS7Zvza7AsQdB04t89/1O/w1cDnyilFU=";
+                this.ChannelAccessToken = ChannelAccessToken;
                 //配合Line Verify
                 if (ReceivedMessage.events == null || ReceivedMessage.events.Count() <= 0 ||
                     ReceivedMessage.events.FirstOrDefault().replyToken == "00000000000000000000000000000000") return Ok();
@@ -107,15 +113,20 @@ namespace isRock.Template
                         {
                             var updateCountOrderFlowDto = new UpdateCountOrderFlowDto()
                             {
-                                FlowStatus = 2,//暫時寫1應該要寫2
+                                FlowStatus = OrderFlowEnum.Number,
                                 Count = Convert.ToInt32(LineEvent.message.text),
                                 LineId = LineEvent.source.userId,
                                 OrderListId = orderFlow.OrderListId
 
                             };
                             _orderFlowServices.Update(updateCountOrderFlowDto);
+
                             var orderListData = _orderListServices.GettOrder(orderFlow.OrderListId);
+                            var domainName = _configuration.GetValue<string>("Domain:name");
+                            var pathImage = _configuration.GetValue<string>("Path:image");
+                            orderListData.PictureUrl = $"{domainName}/{pathImage}/{orderListData.PictureUrl}";
                             responseMsg = _applicationServices.Confiem(orderListData.Name, Convert.ToInt32(LineEvent.message.text), LineEvent.source.userId, orderListData.PictureUrl);
+
 
                             this.ReplyMessageWithJSON(LineEvent.replyToken, responseMsg);
                         }
@@ -124,12 +135,12 @@ namespace isRock.Template
                     else if(orderFlow != null && orderFlow.FlowStatus == 3)
                     {
                         var orderConfirm = _orderConfirmServices.GetData(userInfo.UserInfoId);
-                        if(orderConfirm.Status == 1)
+                        if(orderConfirm.Status == OrderConfirmEnum.InformationEmpty)
                         {
                             var updateOrderConfirm = new UpdateOrderConfirmDto()
                             {
                                 OrderConfirmId = orderConfirm.OrderConfirmId,
-                                Status = 2,
+                                Status = OrderConfirmEnum.Name,
                                 AccountName = LineEvent.message.text,
                                 ModifyDate = now
                             };
@@ -146,7 +157,7 @@ namespace isRock.Template
                             this.ReplyMessage(LineEvent.replyToken, responseMsg);
                             //姓名
                         }
-                        if (orderConfirm.Status == 2)
+                        if (orderConfirm.Status == OrderConfirmEnum.Name)
                         {
                             var regexMatches = new Regex(@"^\d+$");
                             if (!regexMatches.IsMatch(LineEvent.message.text))
@@ -159,7 +170,7 @@ namespace isRock.Template
                                 var updateOrderConfirm = new UpdateOrderConfirmDto()
                                 {
                                     OrderConfirmId = orderConfirm.OrderConfirmId,
-                                    Status = 3,
+                                    Status = OrderConfirmEnum.Cellphone,
                                     AccountName = orderConfirm.AccountName,
                                     AccountPhone = LineEvent.message.text,
                                     ModifyDate = now
@@ -179,12 +190,12 @@ namespace isRock.Template
                             }
                             //手機
                         }
-                        if (orderConfirm.Status == 3)
+                        if (orderConfirm.Status == OrderConfirmEnum.Cellphone)
                         {
                             var updateOrderConfirm = new UpdateOrderConfirmDto()
                             {
                                 OrderConfirmId = orderConfirm.OrderConfirmId,
-                                Status = 4,
+                                Status = OrderConfirmEnum.Address,
                                 AccountName = orderConfirm.AccountName,
                                 AccountPhone = orderConfirm.AccountPhone,
                                 AccountAddress = LineEvent.message.text,
@@ -229,7 +240,7 @@ namespace isRock.Template
 
                         var updateOrderFlowDto = new UpdateOrderFlowDto()
                         {
-                            FlowStatus = 1,
+                            FlowStatus = OrderFlowEnum.Buy,
                             LineId = LineEvent.source.userId,
                             OrderListId = result.OrderListId
 
@@ -257,7 +268,7 @@ namespace isRock.Template
                     {
                         var updateOederFlowDto = new UpdateOrderFlowDto()
                         {
-                            FlowStatus = 3,
+                            FlowStatus = OrderFlowEnum.Order,
                             LineId = LineEvent.source.userId,
                             OrderListId = orderFlow.OrderListId
 
@@ -272,7 +283,7 @@ namespace isRock.Template
                             UserInfoId = userInfo.UserInfoId,
                             Count = orderFlow.Count,
                             OrderListId = orderFlow.OrderListId,
-                            Status = 1,
+                            Status = OrderConfirmEnum.InformationEmpty,
                             CreateDate = now,
                             ModifyDate = now
                         };
@@ -289,7 +300,7 @@ namespace isRock.Template
                     {
                         var updateOederFlowDto = new UpdateOrderFlowDto()
                         {
-                            FlowStatus = 0,
+                            FlowStatus = OrderFlowEnum.Cancel,
                             LineId = LineEvent.source.userId,
                             OrderListId = orderFlow.OrderListId
 
@@ -338,7 +349,7 @@ namespace isRock.Template
                         var updateOrderConfirm2 = new UpdateOrderConfirmDto2()
                         {
                             OrderConfirmId = orderConfirm.OrderConfirmId,
-                            Status = 1,
+                            Status = OrderConfirmEnum.InformationEmpty,
                             ModifyDate = now
                         };
                         if (_orderConfirmServices.Update(updateOrderConfirm2))
@@ -384,10 +395,7 @@ namespace isRock.Template
                         packageId = 1,
                         stickerId = 1
                     };
-                       
-                //回覆訊息
-                
-                //response OK
+
                 return Ok();
             }
             catch (Exception ex)
@@ -395,11 +403,9 @@ namespace isRock.Template
                 //回覆訊息
                 var nn = ex.Message;
                 var LineEvent = this.ReceivedMessage.events.FirstOrDefault();
-                //this.PushMessage(AdminUserId, "發生錯誤:\n" + ex.Message);
-                //response OK
                 var responseMsg = $"資訊錯誤請聯絡管理員";
                 this.ReplyMessage(LineEvent.replyToken, responseMsg);
-		Console.Write(nn+"ErrorMessage");
+		       // Console.Write(nn+"ErrorMessage");
                 return Ok();
             }
         }

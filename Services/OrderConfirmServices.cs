@@ -3,6 +3,8 @@ using LineBuyCart.Dtos.Line;
 using LineBuyCart.Dtos;
 using LineBuyCart.Models;
 using AutoMapper;
+using LineBuyCart.Enum;
+
 namespace LineBuyCart.Services
 {
     public class OrderConfirmServices
@@ -24,25 +26,9 @@ namespace LineBuyCart.Services
         {
             try
             {
-                //var orderconfirmDto = new OrderConfirmDto();
                 var result = _db.OrderConfirms.Where(x => x.UserInfoId == userInfoId)
                     .OrderByDescending(x=>x.OrderConfirmId)
                     .Take(1).FirstOrDefault();
-                //var orderConfirm = ;
-                //var result3 = _db.OrderConfirms.Where(x => x.UserInfoId == userInfoId)
-                //      .OrderByDescending(x => x.OrderConfirmId)
-                //      .Select(x => new OrderConfirmDto()
-                //      {
-                //          OrderConfirmId = x.OrderConfirmId,
-                //          //UserInfoId = x.UserInfoId,
-                //          //Count = x.Count,
-                //          //OrderListId = x.OrderConfirmId,
-                //          //Status = x.Status,
-                //          //AccountName = x.AccountName,
-                //          //AccountPhone = x.AccountPhone,
-                //          //AccountAddress = x.AccountAddress
-
-                //      }).ToList();
                 return _mapper.Map<OrderConfirmDto>(result);
             }
             catch(Exception err)
@@ -55,10 +41,10 @@ namespace LineBuyCart.Services
         {
             try
             {
+                
                 var orderconfirm = new OrderConfirm();
                 var result = _mapper.Map(createOrderConfirmDto, orderconfirm);
                 
-                //_db.SaveChanges();
                 return result;
             }
             catch(Exception err)
@@ -70,18 +56,10 @@ namespace LineBuyCart.Services
 
         public bool Update(UpdateOrderConfirmDto updateOrderConfirmDto)
         {
-            try
-            {
                 var orderConfirmData = _db.OrderConfirms.Where(x => x.OrderConfirmId == updateOrderConfirmDto.OrderConfirmId).FirstOrDefault();
                 var resp = _mapper.Map(updateOrderConfirmDto,orderConfirmData);
                 _db.SaveChanges();
                 return true;
-            }
-            catch(Exception err)
-            {
-                var errorMessage = err.Message;
-                return false;
-            }
         }
         public bool Update(UpdateOrderConfirmDto2 updateOrderConfirmDto2)
         {

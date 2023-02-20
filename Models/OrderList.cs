@@ -8,7 +8,7 @@ namespace LineBuyCart.Models
         public int OrderListId { get; set; }
         public string Name { get; set; } = null!;
         public int Price { get; set; }
-        public string? Ｄescribe { get; set; }
+        public string? Describe { get; set; }
         public string? PictureUrl { get; set; }
     }
 }

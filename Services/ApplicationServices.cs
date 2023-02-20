@@ -3,6 +3,7 @@ using LineBuyCart.Dtos;
 using LineBuyCart.Models;
 using LineBuyCart.Providers;
 using LineBuyCart.Service;
+using Microsoft.Extensions.Configuration;
 
 namespace LineBuyCart.Services
 {
@@ -10,9 +11,11 @@ namespace LineBuyCart.Services
     {
         private readonly JsonProvider _jsonProvider = new JsonProvider();
         private readonly OrderListServices _orderListServices;
-        public ApplicationServices(OrderListServices _orderList)
+        private readonly IConfiguration _configuration;
+        public ApplicationServices(OrderListServices _orderList, IConfiguration configuration)
         {
             _orderListServices = _orderList;
+            _configuration = configuration;
         }
 
         /// <summary>
@@ -323,10 +326,16 @@ namespace LineBuyCart.Services
         /// <returns></returns>
         public string   MargeJson()
         {
-            var Lists = _orderListServices.GettOrder();
+            var domainName = _configuration.GetValue<string>("Domain:name");
+            var pathImage = _configuration.GetValue<string>("Path:image");
+
+            var lists = _orderListServices.GettOrder();
+
+            lists.ToList().ForEach(i => i.PictureUrl =  $"{domainName}/{pathImage}/{i.PictureUrl}");
+            
             var Contents = new List<FlexBubbleContainerDto>();
 
-            foreach (var item in Lists)
+            foreach (var item in lists)
             {
                 Contents.Add(new FlexBubbleContainerDto()
                 {
@@ -335,7 +344,7 @@ namespace LineBuyCart.Services
                     Hero = new FlexComponentDto
                     {
                         Type = "image",
-                        Url = item.PictureUrl,
+                        Url = $"{item.PictureUrl}",
                         Size = "full",
                         AspectMode = "cover",
                         AspectRatio = "320:213"
@@ -393,7 +402,7 @@ namespace LineBuyCart.Services
                                                                 new FlexComponentDto
                                                                 {
                                                                     Type = "text",
-                                                                    Text = item.Ｄescribe,
+                                                                    Text = item.Describe,
                                                                     Wrap = true,
                                                                     Color  ="#8c8c8c",
                                                                     Size = "xs",

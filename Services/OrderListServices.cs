@@ -17,17 +17,9 @@ namespace LineBuyCart.Service
         }
         public OrderList GettOrder(int orderListId)
         {
-            var outData = new OrderList();
-            try
-            {
+               var outData = new OrderList();
                 outData = _db.OrderLists.Where(x => x.OrderListId == orderListId).FirstOrDefault();
                 return outData;
-            }
-            catch(Exception err)
-            {
-                var errMessag = err.Message;
-                return outData;
-            }
             
         }
     }
